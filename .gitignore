@@ -1,2 +1,4 @@
 docker/mysql/data
 docker/nginx/logs
+webbylab-test/vendor
+webbylab-test/.env

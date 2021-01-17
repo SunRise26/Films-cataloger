@@ -1,0 +1,28 @@
+{
+    "name": "soulrise/webbylab-test",
+    "description": "test project for webbylab",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Vitalii Veselovskyi",
+            "email": "soul26021998@gmail.com"
+        }
+    ],
+    "require": {
+        "vlucas/phpdotenv": "^5.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "Core\\": "src/core",
+            "Core\\Router\\": "src/core/router",
+            "Controllers\\": "src/controllers",
+            "Views\\": "src/views",
+            "Models\\": "src/models"
+        }
+    },
+    "scripts": {
+        "post-update-cmd": [
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+        ]
+    }
+}
