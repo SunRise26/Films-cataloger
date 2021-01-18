@@ -10,6 +10,16 @@ class View {
     protected string $html_template = self::DEFAULT_TEMPLATE;
     protected string $body_template = "";
 
+    private array $data = [];
+
+    public function setData(string $key, $value) {
+        $this->data[$key] = $value;
+    }
+
+    public function getData(string $key) {
+        return $this->data[$key] ?: null;
+    }
+
     /**
      * Return rendered view
      *

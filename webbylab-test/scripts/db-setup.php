@@ -36,8 +36,7 @@ $query_result = $mysqli->query($query);
 $query = 'CREATE TABLE IF NOT EXISTS ' . $filmActorsListTable . ' (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     film_id INT UNSIGNED NOT NULL,
-    firstname VARCHAR(50) NOT NULL,
-    lastname VARCHAR(50) NOT NULL,
+    full_name VARCHAR(120) NOT NULL,
     FOREIGN KEY (film_id) REFERENCES ' . $filmsTable . '(id)
 ) ENGINE = INNODB';
 $query_result = $mysqli->query($query);

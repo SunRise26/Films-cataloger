@@ -10,6 +10,9 @@ class IndexController extends Controller {
         $view = $this->getView();
         $filmModel = new FilmModel();
 
+        $view->setData('film_formats', $filmModel->getFilmFormats());
+        $view->setData('films', $filmModel->getFilmsData());
+
         return $view->toHtml();
     }
 }

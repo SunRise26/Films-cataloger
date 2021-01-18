@@ -20,4 +20,14 @@ class Controller {
         }
         return $this->view;
     }
+
+    protected function setJsonResponseHeaders() {
+        header('Access-Control-Allow-Origin: *');
+        header('Content-type: application/json');
+    }
+
+    protected function withResponseCode($code = 200, $payload = null) {
+        http_response_code($code);
+        return $payload;
+    }
 }
