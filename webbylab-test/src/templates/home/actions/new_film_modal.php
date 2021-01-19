@@ -3,16 +3,16 @@
     <div class="container fancy-box" role="dialog" aria-modal="true" aria-labelledby="add-film-modal-title">
       <div id="add-film-modal-content">
         <form id="add-film-form">
-          <input type="text" name="title" placeholder="FILM TITLE" />
-          <input type="number" value="2020" name="year" />
-          <select name="format_id">
+          <input type="text" name="title" class="input" placeholder="FILM TITLE" />
+          <input type="number" value="2021" name="year" class="input" />
+          <select name="format_id" class="input">
             <?php foreach ($this->getData('film_formats') as $id => $title) : ?>
               <option value=<?= $id ?>><?= $title ?></option>
             <?php endforeach; ?>
           </select>
-          <button id="add-actor">add actor</button>
+          <button id="add-actor" class="input button">add actor</button>
           <div id="actors"></div>
-          <button type="submit">Submit</button>
+          <button type="submit" class="input button">Submit</button>
         </form>
       </div>
     </div>
@@ -49,8 +49,8 @@
       e.preventDefault();
       var newElement = `
         <div>
-          <input type="text" name="actors[]" />
-          <button type="button" class="delete-actor" onclick="onClickRemoveActor(this)">remove</button>
+          <input type="text" name="actors[]" class="input" />
+          <button type="button" class="delete-actor input button" onclick="onClickRemoveActor(this)">remove</button>
         </div>
       `;
       actorsDiv.append(newElement);

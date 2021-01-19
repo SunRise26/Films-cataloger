@@ -1,0 +1,15 @@
+@mixin custom_slider {
+  &::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+  
+  &::-webkit-scrollbar {
+    width: 20px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border: 5px solid black;
+    border-radius: 25px;
+  }
+}

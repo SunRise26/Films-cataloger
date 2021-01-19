@@ -3,8 +3,8 @@
         <div class="container fancy-box" role="dialog" aria-modal="true" aria-labelledby="import-file-modal-title">
             <div id="import-file-modal-content">
                 <form id="imprort-file-form" enctype="multipart/form-data">
-                    <input type="file" id="import-file" name="import_file" />
-                    <button type="submit" id="submit-file-button">Submit</button>
+                    <input type="file" id="import-file" name="import_file" class="input" />
+                    <button type="submit" id="submit-file-button" class="input button">Submit</button>
                 </form>
             </div>
             <span id="be-patient" style="display:none;">Be patient, please:) Safety over speed -_-</span>

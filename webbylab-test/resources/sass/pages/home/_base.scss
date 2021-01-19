@@ -3,6 +3,14 @@
   margin-top: 100px;
   margin-bottom: 100px;
 
+  .right-box {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    padding-left: 23px;
+  }
+
   @import "actions";
   @import "list";
+  @import "search";
 }

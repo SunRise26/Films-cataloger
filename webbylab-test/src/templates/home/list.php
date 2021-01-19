@@ -1,25 +1,29 @@
 <div class="list">
     <?php if (count($this->getData('films'))) : ?>
-        <?php foreach ($this->getData('films') as $film_data) : ?>
-            <div class="film-box">
-                <div class="data-row">
+        <div id="films-box">
+            <?php foreach ($this->getData('films') as $film_data) : ?>
+                <div class="film-box">
                     <div class="film-data">
-                        <span class="title"><?= $film_data['title'] ?></span>
-                        <span><?= $film_data['release_year'] ?></span>
-                        <span><?= $film_data['format_title'] ?></span>
+                        <div class="box-row">
+                            <span class="id">ID: <?= $film_data['id'] ?></span>
+                            <button type="button" class="delete-film" data-id="<?= $film_data['id'] ?>">delete</button>
+                        </div>
+                        <span class="title">TITLE: <?= $film_data['title'] ?></span>
+                        <span class="release-year">RELEASE YEAR: <?= $film_data['release_year'] ?></span>
+                        <span class="format">FORMAT: <?= $film_data['format_title'] ?></span>
                     </div>
-                    <button type="button" class="delete-film" data-id="<?= $film_data['id'] ?>">delete</button>
+                    <?php if (!empty($film_data['actors'])) : ?>
+                        <div>
+                            <span>ACTORS: <?= implode(', ', $film_data['actors']); ?></span>
+                        </div>
+                    <?php endif ?>
                 </div>
-                <?php if (!empty($film_data['actors'])) : ?>
-                    <div class="data-row">
-                        <span>Actors: <?= implode(', ', $film_data['actors']); ?></span>
-                    </div>
-                <?php endif ?>
-            </div>
-        <?php endforeach ?>
+            <?php endforeach ?>
+        </div>
     <?php else : ?>
-        <span class="empty-list-message">NO FILMS</span>
+        <span class="list-message">NO FILMS FOUNDED</span>
     <?php endif ?>
+    <span class="list-message" id="deleting-message" style="display:none;">DELETING...</span>
 </div>
 
 <script type="text/javascript">
@@ -28,11 +32,15 @@
 
         deleteButtons.on('click', (e) => {
             var deleteFilmButton = $(e.target);
+            $("#films-box").hide();
+            $("#deleting-message").show();
 
             $.ajax({
                 type: "POST",
                 url: '/film/delete',
-                data: {id: deleteFilmButton.data('id')},
+                data: {
+                    id: deleteFilmButton.data('id')
+                },
                 complete: (xhr) => {
                     if (xhr.status == 200) {
                         location.href = window.location.href;
