@@ -6,8 +6,8 @@
           <input type="text" name="title" placeholder="FILM TITLE" />
           <input type="number" value="2020" name="year" />
           <select name="format_id">
-            <?php foreach ($this->getData('film_formats') as $format_data) : ?>
-              <option value=<?= $format_data['id'] ?>><?= $format_data['title'] ?></option>
+            <?php foreach ($this->getData('film_formats') as $id => $title) : ?>
+              <option value=<?= $id ?>><?= $title ?></option>
             <?php endforeach; ?>
           </select>
           <button id="add-actor">add actor</button>
@@ -34,7 +34,7 @@
           if (xhr.status == 201) {
             location.href = '/';
           } else {
-            var errorMessage = xhr.status + ': ' + xhr.statusText
+            var errorMessage = xhr.status + ': ' + xhr.statusText;
             alert(errorMessage);
           }
         }

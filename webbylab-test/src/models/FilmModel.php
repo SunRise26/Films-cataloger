@@ -28,7 +28,11 @@ class FilmModel extends Model {
             $this->closeConnection();
 
             if ($query_result->num_rows > 0) {
-                $this->filmFormats = $query_result->fetch_all(MYSQLI_ASSOC);
+                $filmFormats = $query_result->fetch_all(MYSQLI_ASSOC);
+                $this->filmFormats = array_reduce($filmFormats, function ($result, $formatData) {
+                    $result[$formatData['id']] = $formatData['title'];
+                    return $result;
+                });
             }
         }
         return $this->filmFormats;
@@ -50,7 +54,9 @@ class FilmModel extends Model {
         $query .= " ORDER BY title ASC";
  
         $stmt = $mysqli->prepare($query);
-        $stmt->bind_param($stmtParams['types'], ...$stmtParams['variables']);
+        if (count($stmtParams['types'])) {
+            $stmt->bind_param($stmtParams['types'], ...$stmtParams['variables']);
+        }
         $stmt->execute();
         $query_result = $stmt->get_result();
         $stmt->close();
@@ -120,18 +126,30 @@ class FilmModel extends Model {
         }
     }
 
-    public function addFilm(array $data) {
+    public function addFilms($filmsDataArray) {
         $mysqli = $this->getConnection();
-        
+        $query_result = false;
+
         $query = 'INSERT INTO ' . self::$table_name;
         $query .= ' (title, release_year, format_id)';
         $query .= ' VALUES (?, ?, ?)';
 
+        $title = null;
+        $release_year = null;
+        $format_id = null;
         $stmt = $mysqli->prepare($query);
-        $stmt->bind_param("sii", $data['title'], $data['year'], $data['format_id']);
-        if ($query_result = $stmt->execute()) {
-            $filmId = $mysqli->insert_id;
-            $this->addActors($filmId, $data['actors']);
+        $stmt->bind_param("sii", $title, $release_year, $format_id);
+        foreach ($filmsDataArray as $data) {
+            $title = $data['title'];
+            $release_year = $data['release_year'];
+            $format_id = $data['format_id'];
+
+            if ($query_result = $stmt->execute()) {
+                $filmId = $mysqli->insert_id;
+                $this->addActors($filmId, $data['actors']);
+            } else {
+                break;
+            }
         }
         $stmt->close();
 

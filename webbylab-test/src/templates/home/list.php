@@ -35,7 +35,7 @@
                 data: {id: deleteFilmButton.data('id')},
                 complete: (xhr) => {
                     if (xhr.status == 200) {
-                        location.href = '/';
+                        location.href = window.location.href;
                     } else {
                         var errorMessage = xhr.status + ': ' + xhr.statusText
                         alert(errorMessage);

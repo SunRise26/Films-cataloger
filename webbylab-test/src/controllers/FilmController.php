@@ -14,7 +14,7 @@ class FilmController extends Controller {
 
         try {
             $film_data = $this->formatAddActionData();
-            $result = $filmModel->addFilm($film_data);
+            $result = $filmModel->addFilms([$film_data]);
         } catch (Exception $e) {
             return $this->withResponseCode(500);
         }
@@ -27,7 +27,7 @@ class FilmController extends Controller {
 
         return [
             'title' => $title,
-            'year' => $_POST['year'],
+            'release_year' => $_POST['year'],
             'format_id' => $_POST['format_id'],
             'actors' => $actors
         ];

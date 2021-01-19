@@ -20,7 +20,7 @@ class IndexController extends Controller {
 
     protected function formatIndexActionData() {
         return [
-            's_key' => $_GET['s_key'] ?: '',
+            's_key' => !empty($_GET['s_key']) ? trim($_GET['s_key'])  : '',
             's_type' => $_GET['s_type'] ?: false,
         ];
     }
