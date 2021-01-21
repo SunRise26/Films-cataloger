@@ -9,6 +9,7 @@ use Models\FilmModel;
 class ImportController extends Controller {
 
     public function importAction() {
+        $this->setJsonResponseHeaders();
         $fileData = $_FILES['file'];
 
         switch ($fileData['type']) {
@@ -27,11 +28,14 @@ class ImportController extends Controller {
             $text = file_get_contents($fileData["tmp_name"]);
             $filmTextBlocks = array_filter(explode(PHP_EOL . PHP_EOL, $text));
             $filmsData = array_map([$this, 'formatFilmData'], $filmTextBlocks);
-            $filmModel->addFilms($filmsData);
+            $payload = $filmModel->addFilms($filmsData);
         } catch (Exception $e) {
             return $this->withResponseCode(500);
         }
-        return $this->withResponseCode(200);
+        if (empty($payload)) {
+            $payload[]['message'] = "No films data found.";
+        }
+        return $this->withResponseCode(200, json_encode($payload));
     }
 
     protected function formatFilmData($filmTextBlock) {

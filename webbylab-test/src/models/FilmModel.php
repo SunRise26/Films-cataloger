@@ -3,6 +3,9 @@
 namespace Models;
 
 use Core\Model;
+use Exception;
+use Helpers\FilmDataHelper;
+use Helpers\FilmSearchHelper;
 
 class FilmModel extends Model {
     protected static string $table_name = "films";
@@ -18,6 +21,18 @@ class FilmModel extends Model {
         "actor" => self::SEARCH_BY_ACTOR
     ];
 
+    const SORT_ORDER_ASC = 0;
+    const SORT_ORDER_DESC = 1;
+    public static array $search_sort_order_options = [
+        "title A-Z" => self::SORT_ORDER_ASC,
+        "title Z-A" => self::SORT_ORDER_DESC
+    ];
+
+    const INSERT_ERROR_FALSE = 0;
+    const INSERT_ERROR_DEFAULT = 1;
+    const INSERT_ERROR_FILM_EXISTS = 2;
+    const INSERT_ERROR_VALIDATION = 3;
+
     private $filmFormats;
 
     public function getFilmFormats() {
@@ -25,7 +40,6 @@ class FilmModel extends Model {
             $mysqli = $this->getConnection();
             $query = 'SELECT * FROM ' . self::$film_formats_table;
             $query_result = $mysqli->query($query);
-            $this->closeConnection();
 
             if ($query_result->num_rows > 0) {
                 $filmFormats = $query_result->fetch_all(MYSQLI_ASSOC);
@@ -44,14 +58,10 @@ class FilmModel extends Model {
             'types' => '',
             'variables' => []
         ];
-
-        $a = self::$table_name;
-        $b = self::$film_formats_table;
-        $query = "SELECT $a.id, $a.title, $a.release_year, $b.title AS format_title";
-        $query .= ' FROM ' . $a;
-        $query .= " INNER JOIN $b ON $a.format_id = $b.id";
-        $this->applyFilmsSearchParams($query, $searchParams, $stmtParams);
-        $query .= " ORDER BY title ASC";
+        
+        $query = $this->getFilmsBasicSelectQuery();
+        $helper = $this->getFilmSearchHelper();
+        $helper->applyFilmsSearchParams($query, $searchParams, $stmtParams);
  
         $stmt = $mysqli->prepare($query);
         if (count($stmtParams['types'])) {
@@ -60,7 +70,6 @@ class FilmModel extends Model {
         $stmt->execute();
         $query_result = $stmt->get_result();
         $stmt->close();
-        $this->closeConnection();
 
         if ($query_result->num_rows > 0) {
             $filmsData = $query_result->fetch_all(MYSQLI_ASSOC) ?: [];
@@ -68,6 +77,15 @@ class FilmModel extends Model {
             return $filmsData;
         }
         return [];
+    }
+
+    protected function getFilmsBasicSelectQuery() {
+        $a = self::$table_name;
+        $b = self::$film_formats_table;
+        $query = "SELECT $a.id, $a.title, $a.release_year, $b.id as format_id, $b.title AS format_title";
+        $query .= ' FROM ' . $a;
+        $query .= " INNER JOIN $b ON $a.format_id = $b.id";
+        return $query;
     }
 
     protected function fetchFilmsActors(array &$filmsData) {
@@ -81,54 +99,31 @@ class FilmModel extends Model {
         }
     }
 
-    protected function applyFilmsSearchParams(string &$query, array $searchParams, &$stmtParams) {
-        switch ($searchParams['s_type']) {
-            case self::SEARCH_BY_TITLE:
-                $this->applyFilmsSearchByTitle($query, $searchParams, $stmtParams);
-                break;
-            case self::SEARCH_BY_ACTOR:
-                $this->applyFilmsSearchByActors($query, $searchParams, $stmtParams);
-                break;
-            default:
-                $this->applyFilmsSearchDefault($query, $searchParams, $stmtParams);
-                break;
-        }
-    }
+    public function getFilmsByTitle($title) {
+        $mysqli = $this->getConnection();
+        $query = $this->getFilmsBasicSelectQuery();
+        $query .= ' WHERE ' . self::$table_name . '.title = ?';
 
-    protected function applyFilmsSearchByTitle(string &$query, array $searchParams, &$stmtParams) {
-        if ($key = $searchParams['s_key']) {
-            $a = self::$table_name;
-            $query .= " WHERE $a.title LIKE ?";
-            $stmtParams['types'] .= 's';
-            $stmtParams['variables'][] = "%$key%";
-        }
-    }
+        $stmt = $mysqli->prepare($query);
+        $stmt->bind_param('s', $title);
 
-    protected function applyFilmsSearchByActors(string &$query, array $searchParams, &$stmtParams) {
-        if ($key = $searchParams['s_key']) {
-            $a = self::$table_name;
-            $b = self::$film_actors_list_table;
-            $query .= " WHERE $a.id IN (SELECT DISTINCT film_id FROM $b WHERE full_name like ?)";
-            $stmtParams['types'] .= 's';
-            $stmtParams['variables'][] = "%$key%";
-        }
-    }
+        $stmt->execute();
+        $query_result = $stmt->get_result();
+        $stmt->close();
 
-    protected function applyFilmsSearchDefault(string &$query, array $searchParams, &$stmtParams) {
-        if ($key = $searchParams['s_key']) {
-            $a = self::$table_name;
-            $b = self::$film_actors_list_table;
-            $query .= " WHERE $a.title LIKE ?";
-            $query .= " OR $a.id IN (SELECT DISTINCT film_id FROM $b WHERE full_name like ?)";
-            $stmtParams['types'] .= 'ss';
-            $stmtParams['variables'][] = "%$key%";
-            $stmtParams['variables'][] = "%$key%";
+        if ($query_result->num_rows > 0) {
+            $filmsData = $query_result->fetch_all(MYSQLI_ASSOC) ?: [];
+            $this->fetchFilmsActors($filmsData);
+            return $filmsData;
         }
+        return [];
     }
 
     public function addFilms($filmsDataArray) {
         $mysqli = $this->getConnection();
-        $query_result = false;
+        $searchHelper = $this->getFilmSearchHelper();
+        $dataHelper = $this->getFilmDataHelper();
+        $result = [];
 
         $query = 'INSERT INTO ' . self::$table_name;
         $query .= ' (title, release_year, format_id)';
@@ -144,17 +139,46 @@ class FilmModel extends Model {
             $release_year = $data['release_year'];
             $format_id = $data['format_id'];
 
-            if ($query_result = $stmt->execute()) {
-                $filmId = $mysqli->insert_id;
-                $this->addActors($filmId, $data['actors']);
-            } else {
-                break;
+            try {
+                $validationErrors = $dataHelper->validateFilmData($data);
+                if (!empty($validationErrors)) {
+                    $result[] = [
+                        'error' => self::INSERT_ERROR_VALIDATION,
+                        'message' => "Validation Failed",
+                        'data' => $validationErrors
+                    ];
+                    continue;
+                }
+                if ($searchHelper->checkIfExists($data)) {
+                    $result[] = [
+                        'error' => self::INSERT_ERROR_FILM_EXISTS,
+                        'message' => "\"$title\" with the same release year, format and actors already exists.",
+                        'data' => $data,
+                    ];
+                    continue;
+                }
+                if ($stmt->execute()) {
+                    $filmId = $mysqli->insert_id;
+                    $this->addActors($filmId, $data['actors']);
+                    $data['id'] = $filmId;
+                    $result[] = [
+                        'error' => self::INSERT_ERROR_FALSE,
+                        'message' => "\"$title\" was successfully saved.",
+                        'data' => $data,
+                    ];
+                } else {
+                    throw new Exception("Failed to insert \"$title\".");
+                }
+            } catch (Exception $e) {
+                $result[] = [
+                    'error' => self::INSERT_ERROR_DEFAULT,
+                    'message' => $e->getMessage(),
+                    'data' => $data,
+                ];
             }
         }
         $stmt->close();
-
-        $this->closeConnection();
-        return $query_result;
+        return $result;
     }
 
     public function deleteFilm($filmId) {
@@ -170,7 +194,6 @@ class FilmModel extends Model {
         $query_result = $stmt->execute();
         $stmt->close();
 
-        $this->closeConnection();
         return $query_result;
     }
 
@@ -220,6 +243,20 @@ class FilmModel extends Model {
         $stmt->close();
 
         return $query_result;
+    }
+
+    protected function getFilmSearchHelper(): FilmSearchHelper {
+        if (empty($this->film_search_helper)) {
+            $this->film_search_helper = new FilmSearchHelper($this);
+        }
+        return $this->film_search_helper;
+    }
+
+    protected function getFilmDataHelper(): FilmDataHelper {
+        if (empty($this->film_data_helper)) {
+            $this->film_data_helper = new FilmDataHelper($this);
+        }
+        return $this->film_data_helper;
     }
 
     public static function getFilmFormatsTable() {

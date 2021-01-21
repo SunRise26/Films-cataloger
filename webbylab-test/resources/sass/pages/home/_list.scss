@@ -1,5 +1,5 @@
 .list {
-  height: 625px;
+  height: 565px;
   overflow-y: scroll;
   overflow-x: hidden;
   border: 5px solid black;
@@ -38,5 +38,33 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    text-align: center;
+  }
+
+  #list-message-box {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-left: 15px;
+    height: 100%;
+    padding-bottom: 15px;
+  }
+
+  #delete-verification-box {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-left: 15px;
+    height: 100%;
+
+    .delete-actions {
+      display: flex;
+      padding-top: 15px;
+      justify-content: space-evenly;
+    }
+
+    .list-message {
+      height: auto;
+    }
   }
 }

@@ -29,6 +29,10 @@
         color: initial;
       }
     }
+
+    #add-film-form {
+      position: relative;
+    }
   }
 
   #import-file-modal {
@@ -37,6 +41,19 @@
 
       #import-file {
         padding: 5px;
+      }
+    }
+  }
+
+  #submit-file-modal-message {
+    .messages {
+      display: flex;
+      flex-direction: column;
+      
+      .response-message {
+        padding-bottom: 10px;
+        padding-top: 10px;
+        border-bottom: 2px solid black;
       }
     }
   }

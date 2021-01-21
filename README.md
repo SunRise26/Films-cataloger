@@ -15,6 +15,8 @@ RUN (cd webbylab-test && cp .env.example .env)
 4. Setup db tables<br/>
 RUN (cd docker && docker-compose exec php php scripts/db-setup.php)
 
+5. Done. Default location: http://localhost
+
 ## Design:
 Project built as MVC system to separate work with database, frontend templates and requests.
 

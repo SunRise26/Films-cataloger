@@ -13,6 +13,10 @@ class Model {
         $this->db_adapter = new Database();
     }
 
+    public function __destruct() {
+        $this->closeConnection();
+    }
+
     protected function getConnection(): mysqli {
         if (empty($this->connection)) {
             $this->connection = $this->db_adapter->connect();

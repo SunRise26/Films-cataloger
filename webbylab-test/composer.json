@@ -17,7 +17,8 @@
             "Core\\Router\\": "src/core/router",
             "Controllers\\": "src/controllers",
             "Views\\": "src/views",
-            "Models\\": "src/models"
+            "Models\\": "src/models",
+            "Helpers\\": "src/helpers"
         }
     },
     "scripts": {

@@ -5,5 +5,22 @@
   #search-form {
     display: flex;
     justify-content: space-between;
+
+    .search-input {
+      width: 100%;
+    }
+
+    .submit {
+      height: 100%;
+      width: 100%;
+    }
+
+    .selectors {
+      display: grid;
+      width: 100%;
+      padding-top: 10px;
+      grid-template-rows: auto;
+      grid-template-columns: 40% auto;
+    }
   }
 }
